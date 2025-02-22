@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Chat Room</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    #messages {
+      list-style: none;
+      padding: 0;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+    #messages li {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    #messageInput {
+      width: calc(100% - 70px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #sendBtn {
+      padding: 10px 15px;
+      border: none;
+      background-color: #5b9bd5;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Chat Room</h1>
+  <ul id="messages"></ul>
+  <input id="messageInput" type="text" placeholder="Type your message..." autofocus />
+  <button id="sendBtn">Send</button>
+
+  <!-- Socket.IO client library -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Initialize Socket.IO connection
+    const socket = io();
+
+    // Render messages shared via chatHistory
+    socket.on('chatHistory', (history) => {
+      const messagesList = document.getElementById('messages');
+      history.forEach(msg => {
+        const li = document.createElement('li');
+        li.textContent = msg;
+        messagesList.appendChild(li);
+      });
+    });
+
+    // Listen for new messages
+    socket.on('chatMessage', (msg) => {
+      const messagesList = document.getElementById('messages');
+      const li = document.createElement('li');
+      li.textContent = msg;
+      messagesList.appendChild(li);
+    });
+
+    // Get the input and button elements
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Function to send a message
+    const sendMessage = () => {
+      const msg = messageInput.value;
+      if (msg) {
+        socket.emit('chatMessage', msg);
+        messageInput.value = '';
+        messageInput.focus();
+      }
+    };
+
+    // Event listeners for sending messages
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
